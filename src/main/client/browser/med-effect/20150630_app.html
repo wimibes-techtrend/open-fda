@@ -1,0 +1,91 @@
+<!doctype html>
+<html ng-app="medInfoApp">
+<head>
+	<meta charset="UTF-8"> 
+	<title>openFDA -- Medication Info</title>
+	<script src="/js/angular.js"></script>
+	<script>
+		/*
+			To find medications, use the following count query:
+			https://api.fda.gov/drug/event.json?api_key=LZgWcrkV7bemrG9i8sKDE8GbWWAUbbOzIRTIOuxU
+				&search=patient.drug.medicinalproduct:cetirizine
+				&count=patient.drug.medicinalproduct.exact
+		*/
+		angular.module('medInfoApp', []).controller('MedsearchController', ['$scope', '$http', '$templateCache',
+			function($scope, $http, $templateCache) {
+				var medList = this;
+
+				$scope.method = 'GET';
+				$scope.url = 'https://api.fda.gov/drug/event.json';
+				
+				medList.meds = [ {term: 'ibuprofin', count: 100}
+					, {term: 'tylenol', count: 70}
+				];
+
+				$scope.fetch = function() {
+					var text = $scope.keywords;
+
+					var requestConfig = {
+						method: $scope.method
+						, url: $scope.url
+						, params: {
+								api_key: 'LZgWcrkV7bemrG9i8sKDE8GbWWAUbbOzIRTIOuxU'
+								, search: 'patient.drug.medicinalproduct:"' + text + '"'
+								, count: 'patient.drug.medicinalproduct.exact'
+								, limit: 100
+						}
+						, cache: $templateCache
+					}
+
+					$scope.code = null;
+					$scope.response = null;
+
+					medList.meds = [];
+
+					$http(requestConfig).
+						success(function(data, status) {
+							$scope.results = data.results.length;
+
+							$scope.status = status;
+							$scope.data = data;
+
+							angular.forEach(data.results, function(result) {
+								medList.meds.push({term: result.term, count: result.count});
+							});
+						}).
+						error(function(data, status) {
+							$scope.data = data || "Request failed";
+							$scope.status = status;
+					});
+				};
+
+				$scope.updateModel = function(method, url) {
+					$scope.method = method;
+					$scope.url = url;
+				};
+			}]);
+	</script>
+</head>
+<body>
+	<div ng-controller="MedsearchController as medList">
+		<!-- probably not really going to use a form ... -->
+		<div style="padding:2px;">
+			Keywords: <input ng-model="keywords" name="search" type="text"/>
+			<button id="search-submit-input" ng-click="fetch()" name="submit" type="button">Search Meds ...</button>
+		</div>
+		<div style="padding:2px;">
+			Result Count:{{results}}
+		</div>
+
+		<div ng-model="results" style="width:30em;height:20ex;overflow:auto;border:1px inset #eee;">
+			<div style="padding:2px;" ng-repeat="med in medList.meds">
+				<span style="float:right;">events: {{med.count}}</span>
+				<input name="medication" value="{{med.term}}" type="checkbox"/>{{med.term}}
+			</div>
+		</div>
+
+		<pre>http status code: {{status}}</pre>
+		<pre>http response data: {{data}}</pre>
+	</div>
+</body>
+</html>
