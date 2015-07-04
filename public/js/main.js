@@ -5,13 +5,29 @@ function paramSerializer(params) {
 	}
 	return arr.join('&');
 }
+function createDateRange(dateFilter, date1, date2) {
+	var dstring1 = dateFilter(date1, 'yyyyMMdd');
+	var dstring2 = dateFilter(date2, 'yyyyMMdd');
+
+	if (date1.getTime() < date2.getTime()) {
+		return '[' + dstring1 + ' TO ' + dstring2 + ']';
+	} else {
+		return '[' + dstring2 + ' TO ' + dstring1 + ']';
+	}
+}
+function createNumberRange(num1, num2) {
+	if (num1 < num2) {
+		return '[' + num1 + ' TO ' + num2 + ']';
+	} else {
+		return '[' + num2 + ' TO ' + num1 + ']';
+	}
+}
 /*
 	To find medications, use the following count query:
 	https://api.fda.gov/drug/event.json?api_key=LZgWcrkV7bemrG9i8sKDE8GbWWAUbbOzIRTIOuxU
 		&search=patient.drug.medicinalproduct:cetirizine
 		&count=patient.drug.medicinalproduct.exact
 */
-<<<<<<< HEAD
 angular.module('medInfoApp', [])
 	.service('Events', function() {
 		var API_KEY: 'LZgWcrkV7bemrG9i8sKDE8GbWWAUbbOzIRTIOuxU';
@@ -73,11 +89,6 @@ angular.module('medInfoApp', [])
 			var search;
 			var medSearch = this;
 			var dateFilter = $filter('date');
-=======
-angular.module('medInfoApp', []).controller('MedsearchController', ['$scope', '$http', '$templateCache',
-		function($scope, $http, $templateCache) {
-			var medList = this;
->>>>>>> origin
 
 			$scope.method = 'GET';
 			$scope.url = 'https://api.fda.gov/drug/event.json';
@@ -97,17 +108,17 @@ angular.module('medInfoApp', []).controller('MedsearchController', ['$scope', '$
 			var filters = [];
 
 				if ($scope.filterMedicationName) {
-					filters.push({ field: $scope.medicationField, value: $scope.medicationName });
+					filters.push({ field: $scope.medicationField, value: '"' + $scope.medicationName + '"' });
 				}
 				if ($scope.filterAdministrationRoute) {
 					filters.push({ field: 'patient.drug.drugadministrationroute', value: $scope.administrationRoute });
 				}
 				if ($scope.filterDosage) {
 					filters.push({ field: 'patient.drug.drugcumulativedosageunit', value: $scope.dosageUnit });
-					filters.push({ field: 'patient.drug.drugcumulativedosagenumb', value:  });
+					filters.push({ field: 'patient.drug.drugcumulativedosagenumb'
+						, value: createNumberRange($scope.dosageFrom, $scope.dosageTo) });
 				}
 				if ($scope.filterSince) {
-<<<<<<< HEAD
 					filters.push({ field: 'receivedate', value: createDateRange(dateFilter, new Date($scope.since), new Date()) });
 				}
 				if ($scope.filterSeverity) {
@@ -115,53 +126,6 @@ angular.module('medInfoApp', []).controller('MedsearchController', ['$scope', '$
 				}
 
 			}
-=======
-					filters.push({ field: , value:  });
-				}
-
-				return;
-
-				var requestConfig = {
-					method: $scope.method
-					, url: $scope.url
-					, params: {
-							search: '(patient.drug.openfda.generic_name:' + text + ')'
-							, count: 'patient.drug.openfda.generic_name'
-							, limit: 100
-							, api_key: 'LZgWcrkV7bemrG9i8sKDE8GbWWAUbbOzIRTIOuxU'
-					}
-					, cache: $templateCache
-				}
-
-				$scope.code = null;
-				$scope.response = null;
-
-				medList.meds = [];
-
-				try {
-					$scope.requesturl = $scope.url + '?' + paramSerializer(requestConfig.params);
-				} catch (e) {
-					alert('oops: ' + e.message);
-				}
-
-				$http(requestConfig).
-					success(function(data, status) {
-						$scope.results = data.results.length;
-
-						$scope.status = status;
-						$scope.data = data;
-
-						angular.forEach(data.results, function(result) {
-							medList.meds.push({term: result.term, count: result.count});
-						});
-					}).
-					error(function(data, status) {
-						$scope.data = data || "Request failed";
-						$scope.status = status;
-				});
-			};
-
->>>>>>> origin
 		}
 	])
 	.controller('EventListController', ['$scope', '$http', '$templateCache',
@@ -170,5 +134,3 @@ angular.module('medInfoApp', []).controller('MedsearchController', ['$scope', '$
 		}
 	])
 ;
-
-
