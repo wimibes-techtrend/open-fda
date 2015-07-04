@@ -1,0 +1,113 @@
+<!doctype html>
+<html ng-app="medInfoApp">
+<head>
+	<meta charset="UTF-8"> 
+	<title>Med Effects :: search | openFDA</title>
+
+	<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+	<script src="js/angular.js"></script>
+	<!-- <script src="js/filter.js"></script> -->
+	<script src="js/main.js"></script>
+	<style>
+		* {
+			font-family: arial, verdana, helvetica, sans serif;
+		}
+		select, button {
+			font-size: 100%;
+		}
+	</style>
+</head>
+<body>
+	<!--
+		Search page
+	-->
+	<div ng-controller="MedsearchController as medList">
+		<span>Filter by:</span>
+		<!-- Medication Name -->
+		<div class="input-group">
+			<input ng-model="filterMedicationName" name="filter-medication-name" type="checkbox"/>
+			<span>Medication:</span>
+			<input ng-model="medicationName" name="medication-name" type="text" placeholder="Medication name"/>
+			<select ng-model="medicationField" name="medication-field">
+				<option value="patient.drug.medicationname">Common name</option>
+				<option value="patient.drug.openfda.brand_name">Brand name</option>
+				<option value="patient.drug.openfda.generic_name">Generic name</option>
+			</select>
+		</div>
+
+		<!-- Administration method -->
+		<div class="input-group">
+			<input ng-model="filterAdministrationRoute" name="filter-administration-route" type="checkbox"/>
+			<span>Administration method:</span>
+			<select ng-model="administrationRoute" name="administration-route">
+				<option value="048">Oral</option><option value="001">Auricular (otic)</option><option value="002">Buccal</option><option value="003">Cutaneous</option><option value="004">Dental</option><option value="005">Endocervical</option><option value="006">Endosinusial</option><option value="007">Endotracheal</option><option value="008">Epidural</option><option value="009">Extra-amniotic</option><option value="010">Hemodialysis</option><option value="011">Intra corpus cavernosum</option><option value="012">Intra-amniotic</option><option value="013">Intra-arterial</option><option value="014">Intra-articular</option><option value="015">Intra-uterine</option><option value="016">Intracardiac</option><option value="017">Intracavernous</option><option value="018">Intracerebral</option><option value="019">Intracervical</option><option value="020">Intracisternal</option><option value="021">Intracorneal</option><option value="022">Intracoronary</option><option value="023">Intradermal</option><option value="024">Intradiscal (intraspinal)</option><option value="025">Intrahepatic</option><option value="026">Intralesional</option><option value="027">Intralymphatic</option><option value="028">Intramedullar (bone marrow)</option><option value="029">Intrameningeal</option><option value="030">Intramuscular</option><option value="031">Intraocular</option><option value="032">Intrapericardial</option><option value="033">Intraperitoneal</option><option value="034">Intrapleural</option><option value="035">Intrasynovial</option><option value="036">Intratumor</option><option value="037">Intrathecal</option><option value="038">Intrathoracic</option><option value="039">Intratracheal</option><option value="040">Intravenous bolus</option><option value="041">Intravenous drip</option><option value="042">Intravenous (not otherwise specified)</option><option value="043">Intravesical</option><option value="044">Iontophoresis</option><option value="045">Nasal</option><option value="046">Occlusive dressing technique</option><option value="047">Ophthalmic</option><option value="049">Oropharingeal</option><option value="050">Other</option><option value="051">Parenteral</option><option value="052">Periarticular</option><option value="053">Perineural</option><option value="054">Rectal</option><option value="055">Respiratory (inhalation)</option><option value="056">Retrobulbar</option><option value="057">Sunconjunctival</option><option value="058">Subcutaneous</option><option value="059">Subdermal</option><option value="060">Sublingual</option><option value="061">Topical</option><option value="062">Transdermal</option><option value="063">Transmammary</option><option value="064">Transplacental</option><option value="065">Unknown</option><option value="066">Urethral</option><option value="067">Vaginal</option>
+			</select>
+		</div>
+
+		<!-- Cumulative dosage -->
+		<div class="input-group">
+			<input ng-model="filterDosage" name="filter-dosage" value="1" type="checkbox"/>
+			<span>Dosage:</span>
+			<select ng-model="dosageUnit" name="dosage-unit">
+				<option value="004">microgram(s)</option>
+				<option value="003">milligram(s)</option>
+				<option value="002">gram(s)</option>
+				<option value="001">kilogram(s)</option>
+			</select>
+			<span>From:</span>
+			<input ng-model="dosageFrom" name="dosage-from" type="text" placeholder="Min" value="0" size="4"/>
+			<span>To:</span>
+			<input ng-model="dosageTo" name="dosage-to" type="text" placeholder="Max" size="4"/>
+		</div>
+		
+		<!-- Since -->
+		<div class="input-group">
+			<input ng-model="filterSince" name="filter-since" value="1" type="checkbox"/>
+			<span>Since:</span>
+			<input ng-model="since" name="since" type="text" placeholder="Date (mm/yy/dddd)" value="0"/>
+		</div>
+
+		<button id="search-submit-input" ng-click="fetch()" name="submit" type="button">Search Incidents ...</button>
+
+		<div style="padding:2px;">
+			Showing top {{results}} events <!-- results that ended in a serious condition -->
+		</div>
+
+		<div ng-model="results" style="width:30em;height:20ex;overflow:auto;border:1px inset #eee;">
+			{{resultCopy}}
+			<div style="padding:2px;" ng-repeat="med in medList.meds">
+				<span style="display:none;float:right;">events: {{med.count}}</span>
+				<input name="medication" value="{{med.term}}" type="checkbox"/>{{med.term}}
+			</div>
+		</div>
+
+		<div>
+			<button id="research" ng-click="research()" name="submit" type="button">Show me more about my meds ...</button>
+		</div>
+
+		<div style="display:block;">
+			Full URL: <input type="text" value="{{requesturl}}" style="width:80%;"/>
+			<pre>HTTP status code: {{status}}</pre>
+			<pre>HTTP response data: {{data}}</pre>
+		</div>
+	</div>
+
+	<!--
+		Event types -- displays a semi-interactive chart about the event types that exist for the selected medications
+	-->
+	<div ng-controller="EventtypeController as eventList" style="padding-top:3ex;">
+		
+	</div>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+

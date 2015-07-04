@@ -34,10 +34,10 @@ angular.module('medInfoApp', []).controller('MedsearchController', ['$scope', '$
 				}
 				if ($scope.filterDosage) {
 					filters.push({ field: 'patient.drug.drugcumulativedosageunit', value: $scope.dosageUnit });
-					filters.push({ field: 'patient.drug.drugcumulativedosagenumb', value:''});
+					filters.push({ field: 'patient.drug.drugcumulativedosagenumb', value:  });
 				}
 				if ($scope.filterSince) {
-					filters.push({ field: '', value:''});
+					filters.push({ field: , value:  });
 				}
 
 				return;
