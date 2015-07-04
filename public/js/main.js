@@ -28,10 +28,66 @@ function createNumberRange(num1, num2) {
 		&search=patient.drug.medicinalproduct:cetirizine
 		&count=patient.drug.medicinalproduct.exact
 */
-angular.module('medInfoApp', []).controller('MedsearchController', ['$scope', '$http', '$templateCache', '$filter',
+angular.module('medInfoApp', [])
+	.service('Events', function() {
+		var API_KEY: 'LZgWcrkV7bemrG9i8sKDE8GbWWAUbbOzIRTIOuxU';
+
+		this.fetch = function(filters, countField, limit) {
+			var search = [];
+
+			search = [];
+			for (var filter in filters) {
+				if (filters.hasOwnProperty(filter)) {
+					filter = filters[filter];
+					search.push('(' + filter.field + ':' + filter.value + ')');
+				}
+			}
+			search = search.join(' AND ');
+
+			var requestConfig = {
+				method: $scope.method
+				, url: $scope.url
+				, params: {
+						search: search
+						, count: countField // 'patient.reaction.reactionmeddrapt.exact'
+						, limit: limit
+						, api_key: API_KEY
+				}
+				, cache: $templateCache
+			}
+
+			$scope.code = null;
+			$scope.response = null;
+
+			$scope.requesturl = $scope.url + '?' + paramSerializer(requestConfig.params);
+
+			$http(requestConfig).
+				success(function(data, status) {
+					var capitalized;
+					$scope.results = data.results.length;
+
+					$scope.status = status;
+					$scope.data = data;
+
+					/**
+					angular.forEach(data.results, function(result) {
+						capitalized = result.term.substring(0, 1).toUpperCase() + result.term.substring(1).toLowerCase();
+						medList.meds.push({term: capitalized, count: result.count});
+					});
+					*/
+				}).
+				error(function(data, status) {
+					$scope.data = data || "Request failed";
+					$scope.status = status;
+			});
+		};
+
+
+	})
+	.controller('MedsearchController', ['$scope', '$http', '$templateCache', '$filter',
 		function($scope, $http, $templateCache, $filter) {
 			var search;
-			var medList = this;
+			var medSearch = this;
 			var dateFilter = $filter('date');
 
 			$scope.method = 'GET';
@@ -39,11 +95,17 @@ angular.module('medInfoApp', []).controller('MedsearchController', ['$scope', '$
 			
 			$scope.keywords = 'ibuprofen';
 
-			medList.meds = [];
-
-			$scope.fetch = function() {
-				var text = $scope.keywords;
-				var filters = [];
+			////// Some initialization /////
+			$scope.medicationName = 'Advil';
+			$scope.medicationField = 'patient.drug.medicinalproduct';
+			$scope.administrationRoute = '048'
+			$scope.since = '01/31/2014';
+			$scope.dosageUnit = '003';
+			$scope.severity = 1;
+			///////////////////////////////
+			
+			function fetch() {
+			var filters = [];
 
 				if ($scope.filterMedicationName) {
 					filters.push({ field: $scope.medicationField, value: '"' + $scope.medicationName + '"' });
@@ -57,62 +119,20 @@ angular.module('medInfoApp', []).controller('MedsearchController', ['$scope', '$
 						, value: createNumberRange($scope.dosageFrom, $scope.dosageTo) });
 				}
 				if ($scope.filterSince) {
-					filters.push({ field: 'receivedate', value: createDateRange(dateFilter, new Date(since), new Date()) });
+					filters.push({ field: 'receivedate', value: createDateRange(dateFilter, new Date($scope.since), new Date()) });
+				}
+				if ($scope.filterSeverity) {
+					filters.push({ field: 'serious', value: $scope.severity });
 				}
 
-				search = [];
-				for (var filter in filters) {
-					if (filters.hasOwnProperty(filter)) {
-						filter = filters[filter];
-						search.push('(' + filter.field + ':' + filter.value + ')');
-					}
-				}
-				search = search.join(' AND ');
-
-				//$scope.resultCopy = search;
-
-				var requestConfig = {
-					method: $scope.method
-					, url: $scope.url
-					, params: {
-							search: search
-							, count: 'patient.drug.openfda.generic_name'
-							, limit: 100
-							, api_key: 'LZgWcrkV7bemrG9i8sKDE8GbWWAUbbOzIRTIOuxU'
-					}
-					, cache: $templateCache
-				}
-
-				$scope.code = null;
-				$scope.response = null;
-
-				medList.meds = [];
-
-				$scope.requesturl = $scope.url + '?' + paramSerializer(requestConfig.params);
-
-				$http(requestConfig).
-					success(function(data, status) {
-						$scope.results = data.results.length;
-
-						$scope.status = status;
-						$scope.data = data;
-
-						angular.forEach(data.results, function(result) {
-							medList.meds.push({term: result.term, count: result.count});
-						});
-					}).
-					error(function(data, status) {
-						$scope.data = data || "Request failed";
-						$scope.status = status;
-				});
-			};
-
+			}
 		}
 	])
-	.controller('EventtypeController', ['$scope', '$http', '$templateCache',
+	.controller('EventListController', ['$scope', '$http', '$templateCache',
 		function($scope, $http, $templateCache) {
 			
 		}
-	]);
+	])
+;
 
 
