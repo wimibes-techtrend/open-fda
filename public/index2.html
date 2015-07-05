@@ -6,6 +6,7 @@
 
 	<script type="text/javascript" src="https://www.google.com/jsapi"></script>
 	<script src="js/angular.js"></script>
+	<!-- <script src="js/filter.js"></script> -->
 	<script src="js/main.js"></script>
 	<style>
 		* {
@@ -47,16 +48,16 @@
 		<div class="input-group">
 			<input ng-model="filterDosage" name="filter-dosage" value="1" type="checkbox"/>
 			<span>Dosage:</span>
-			<select ng-model="dosageunit" name="dosage-unit">
+			<select ng-model="dosageUnit" name="dosage-unit">
 				<option value="004">microgram(s)</option>
 				<option value="003">milligram(s)</option>
 				<option value="002">gram(s)</option>
 				<option value="001">kilogram(s)</option>
 			</select>
 			<span>From:</span>
-			<input ng-model="dosagefrom" name="dosage-from" type="text" placeholder="Min" value="0" size="4"/>
+			<input ng-model="dosageFrom" name="dosage-from" type="text" placeholder="Min" value="0" size="4"/>
 			<span>To:</span>
-			<input ng-model="dosageto" name="dosage-to" type="text" placeholder="Max" size="4"/>
+			<input ng-model="dosageTo" name="dosage-to" type="text" placeholder="Max" size="4"/>
 		</div>
 		
 		<!-- Since -->
@@ -73,6 +74,7 @@
 		</div>
 
 		<div ng-model="results" style="width:30em;height:20ex;overflow:auto;border:1px inset #eee;">
+			{{resultCopy}}
 			<div style="padding:2px;" ng-repeat="med in medList.meds">
 				<span style="display:none;float:right;">events: {{med.count}}</span>
 				<input name="medication" value="{{med.term}}" type="checkbox"/>{{med.term}}
@@ -82,7 +84,6 @@
 		<div>
 			<button id="research" ng-click="research()" name="submit" type="button">Show me more about my meds ...</button>
 		</div>
-
 
 		<div style="display:block;">
 			Full URL: <input type="text" value="{{requesturl}}" style="width:80%;"/>
