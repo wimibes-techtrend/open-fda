@@ -77,7 +77,7 @@
 			</select>
 		</div>
 
-		<button id="search-submit-input" ng-click="fetch()" name="submit" type="button">Search Incidents ...</button>
+		<button id="search-submit-input" ng-click="medSearch.fetch()" name="submit" type="button">Search Incidents ...</button>
 
 		<div style="padding:2px;">
 			Showing top {{results}} events <!-- results that ended in a serious condition -->
@@ -90,26 +90,18 @@
 		</div>
 	</div>
 
-	<div ng-controller="EventListController as eventList">
+	<!--
+		Event types: displays a semi-interactive chart about the event types that exist for the selected medications
+	-->
+	<div ng-controller="EventListController">
 		<div ng-model="results" style="width:30em;height:20ex;overflow:auto;border:1px inset #eee;">
-			<div style="padding:2px;" ng-repeat="event in eventList.events">
+			<div style="padding:2px;" ng-repeat="event in EventService.events">
 				<span style="float:right;">events: {{event.count}}</span>
 				<input name="term" value="{{event.term}}" type="checkbox"/>{{event.term}}
 			</div>
 		</div>
 	</div>
 
-	<!--
-		Event types: displays a semi-interactive chart about the event types that exist for the selected medications
-	-->
-	<div ng-controller="EventListController as eventList">
-		<div ng-model="results" style="width:30em;height:20ex;overflow:auto;border:1px inset #eee;">
-			<div style="padding:2px;" ng-repeat="event in eventList.events">
-				<span style="float:right;">events: {{event.count}}</span>
-				<input name="term" value="{{event.term}}" type="checkbox"/>{{event.term}}
-			</div>
-		</div>
-	</div>
 </body>
 </html>
 

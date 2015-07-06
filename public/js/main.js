@@ -30,69 +30,43 @@ function createNumberRange(num1, num2) {
 */
 angular.module('medInfoApp', [])
 	.value('API_KEY', 'LZgWcrkV7bemrG9i8sKDE8GbWWAUbbOzIRTIOuxU')
-	.factory('openfdaDrugService', ['$http', function($http, API_KEY) {
-		var fetch = function(filters, countField, limit) {
-			var search = [];
+	.service('EventService', function() {
+		var _this = this;
+		var events = [ { term: 'Wim Ibes', count: 2034 } ];
 
-			search = [];
-			for (var filter in filters) {
-				if (filters.hasOwnProperty(filter)) {
-					filter = filters[filter];
-					search.push('(' + filter.field + ':' + filter.value + ')');
+		_this.events = events;
+
+		// Could plug in a client-side database on events here ...
+	})
+	.factory('searchDrugEvents', ['$http', '$templateCache', 'API_KEY', function($http, $templateCache, apiKey) {
+		var method = 'GET';
+		var url = 'https://api.fda.gov/drug/event.json';
 				}
 			}
-			search = search.join(' AND ');
+			search = searchFields.join(' AND ');
 
 			var requestConfig = {
-				method: $scope.method
-				, url: $scope.url
+				method: method
+				, url: url
 				, params: {
 						search: search
 						, count: countField // 'patient.reaction.reactionmeddrapt.exact'
 						, limit: limit
-						, api_key: API_KEY
+						, api_key: apiKey
 				}
 				, cache: $templateCache
 			}
 
-			$scope.code = null;
-			$scope.response = null;
-
-			$scope.requesturl = $scope.url + '?' + paramSerializer(requestConfig.params);
-
-			$http(requestConfig).
-				success(function(data, status) {
-					var capitalized;
-					$scope.results = data.results.length;
-
-					$scope.status = status;
-					$scope.data = data;
-				}).
-				error(function(data, status) {
-					$scope.data = data || "Request failed";
-					$scope.status = status;
-			});
+			return $http(requestConfig);
 		};
-	})
-
-
-					/**
-					angular.forEach(data.results, function(result) {
-						capitalized = result.term.substring(0, 1).toUpperCase() + result.term.substring(1).toLowerCase();
-						medList.meds.push({term: capitalized, count: result.count});
-					});
-					*/
-
-	.controller('MedsearchController', ['$scope', '$http', '$templateCache', '$filter',
-		function($scope, $http, $templateCache, $filter) {
+	}])
+	.controller('MedsearchController', ['$scope', '$filter', 'searchDrugEvents', 'EventService',
+		function($scope, $filter, searchDrugEvents, EventService) {
 			var search;
 			var medSearch = this;
 			var dateFilter = $filter('date');
 
-			$scope.method = 'GET';
-			$scope.url = 'https://api.fda.gov/drug/event.json';
-			
-			$scope.keywords = 'ibuprofen';
+			$scope.EventService = EventService;
 
 			////// Some initialization /////
 			$scope.medicationName = 'Advil';
@@ -102,33 +76,106 @@ angular.module('medInfoApp', [])
 			$scope.dosageUnit = '003';
 			$scope.severity = 1;
 			///////////////////////////////
-			
-			function fetch() {
-			var filters = [];
+
+			medSearch.fetch = function() {
+				var doSearch;
+				var searchResults;
+				var criteria = [];
+
+				EventService.events =  [];
 
 				if ($scope.filterMedicationName) {
-					filters.push({ field: $scope.medicationField, value: '"' + $scope.medicationField + '"' });
+					criteria.push({ field: $scope.medicationField, value: '"' + $scope.medicationName + '"' });
 				}
 				if ($scope.filterAdministrationRoute) {
-					filters.push({ field: 'patient.drug.drugadministrationroute', value: $scope.administrationRoute });
+					criteria.push({ field: 'patient.drug.drugadministrationroute', value: $scope.administrationRoute });
 				}
 				if ($scope.filterDosage) {
-					filters.push({ field: 'patient.drug.drugcumulativedosageunit', value: $scope.dosageUnit });
-					filters.push({ field: 'patient.drug.drugcumulativedosagenumb'
+					criteria.push({ field: 'patient.drug.drugcumulativedosageunit', value: $scope.dosageUnit });
+					criteria.push({ field: 'patient.drug.drugcumulativedosagenumb'
 						, value: createNumberRange($scope.dosageFrom, $scope.dosageTo) });
 				}
 				if ($scope.filterSince) {
-					filters.push({ field: 'receivedate', value: createDateRange(dateFilter, new Date($scope.since), new Date()) });
+					criteria.push({ field: 'receivedate', value: createDateRange(dateFilter, new Date($scope.since), new Date()) });
 				}
 				if ($scope.filterSeverity) {
-					filters.push({ field: 'serious', value: $scope.severity });
+					criteria.push({ field: 'serious', value: $scope.severity });
 				}
 
+		};
+	}])
+	.controller('MedsearchController', ['$scope', '$filter', 'searchDrugEvents', 'EventService',
+		function($scope, $filter, searchDrugEvents, EventService) {
+			var search;
+			var medSearch = this;
+			var dateFilter = $filter('date');
+
+			$scope.EventService = EventService;
+
+			////// Some initialization /////
+			$scope.medicationName = 'Advil';
+			$scope.medicationField = 'patient.drug.medicinalproduct';
+			$scope.administrationRoute = '048'
+			$scope.since = '01/31/2014';
+			$scope.dosageUnit = '003';
+			$scope.severity = 1;
+			///////////////////////////////
+
+			medSearch.fetch = function() {
+				var doSearch;
+				var searchResults;
+				var criteria = [];
+
+				EventService.events =  [];
+
+				if ($scope.filterMedicationName) {
+					criteria.push({ field: $scope.medicationField, value: '"' + $scope.medicationName + '"' });
+				}
+				if ($scope.filterAdministrationRoute) {
+					criteria.push({ field: 'patient.drug.drugadministrationroute', value: $scope.administrationRoute });
+				}
+				if ($scope.filterDosage) {
+					criteria.push({ field: 'patient.drug.drugcumulativedosageunit', value: $scope.dosageUnit });
+					criteria.push({ field: 'patient.drug.drugcumulativedosagenumb'
+						, value: createNumberRange($scope.dosageFrom, $scope.dosageTo) });
+				}
+				if ($scope.filterSince) {
+					criteria.push({ field: 'receivedate', value: createDateRange(dateFilter, new Date($scope.since), new Date()) });
+				}
+				if ($scope.filterSeverity) {
+					criteria.push({ field: 'serious', value: $scope.severity });
+				}
+
+				$scope.code = null;
+				$scope.response = null;
+
+				// Perform the search
+				doSearch = searchDrugEvents(criteria, 'patient.reaction.reactionmeddrapt.exact', 100);
+
+				doSearch.success(function(data, status) {
+					var capitalized;
+
+					$scope.results = data.results.length;
+
+					$scope.status = status;
+					$scope.data = data;
+
+					angular.forEach(data.results, function(result) {
+						capitalized = result.term.substring(0, 1).toUpperCase() + result.term.substring(1).toLowerCase();
+						EventService.events.push({ term: capitalized, count: result.count });
+					});
+				});
+
+				doSearch.error(function(data, status) {
+					$scope.data = data || "Request failed";
+					$scope.status = status;
+				});
 			}
 		}
 	])
-	.controller('EventListController', ['$scope', '$http', '$templateCache',
-		function($scope, $http, $templateCache) {
-			
+	.controller('EventListController', ['$scope', '$filter', 'EventService',
+		function($scope, $filter, EventService) {
+			$scope.EventService = EventService;
 		}
 	])
+
