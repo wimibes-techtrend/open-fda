@@ -29,48 +29,90 @@ function createNumberRange(num1, num2) {
 		&count=patient.drug.medicinalproduct.exact
 */
 angular.module('medInfoApp', [])
+	.value('DRUG_API_URL', 'https://api.fda.gov/drug/event.json')
 	.value('API_KEY', 'LZgWcrkV7bemrG9i8sKDE8GbWWAUbbOzIRTIOuxU')
-	.service('EventService', function() {
+	.service('EventService', ['$http', '$templateCache', 'DRUG_API_URL', 'API_KEY', function($http, $templateCache, drugApiUrl, apiKey) {
 		var _this = this;
 		var events = [ { term: 'Wim Ibes', count: 2034 } ];
+		var criteria = [];
 
-		_this.events = events;
+		// Impl
+		this.data = '<n/a>';
+		this.status = '<n/a>';
+		this.requestUrl = drugApiUrl;
+		this.events = events;
+		this.clear = function() {
+			_this.events = [];
+			_this.criteria = [];
+		};
+		this.addCriterion = function(field, value, quoted) {
+			var values;
+			var criterion;
 
-		// Could plug in a client-side database on events here ...
-	})
-	.factory('searchDrugEvents', ['$http', '$templateCache', 'API_KEY', function($http, $templateCache, apiKey) {
-		var method = 'GET';
-		var url = 'https://api.fda.gov/drug/event.json';
-
-		return function(criteria, countField, limit) {
+			if (criteria.hasOwnProperty(field)) {
+				criterion = criteria[field];
+				criterion.values.push(value);
+			} else {
+				criterion = { values: [ value ], quoted: ((quoted) ? true : false) };
+				criteria[field] = criterion;
+			}
+		};
+		this.fetch = function(groupField, limit) {
+			var searching;
 			var search;
+			var values;
+			var criterion;
 			var searchFields = [];
+			var countBy = (groupField) ? groupField : 'patient.reaction.reactionmeddrapt.exact';
 
-			for (var criterion in criteria) {
-				if (criteria.hasOwnProperty(criterion)) {
-					criterion = criteria[criterion];
-					searchFields.push('(' + criterion.field + ':' + criterion.value + ')');
+			for (var field in criteria) {
+				if (criteria.hasOwnProperty(field)) {
+					criterion = criteria[field];
+					values = criterion.values.join(' ');
+					if (criterion.quoted) {
+						values = '"' + values + '"';
+					}
+					searchFields.push('(' + field + ':' + values + ')');
 				}
 			}
 			search = searchFields.join(' AND ');
 
 			var requestConfig = {
-				method: method
-				, url: url
+				method: 'GET'
+				, url: drugApiUrl
 				, params: {
 						search: search
-						, count: countField // 'patient.reaction.reactionmeddrapt.exact'
+						, count: countBy
 						, limit: limit
 						, api_key: apiKey
 				}
 				, cache: $templateCache
 			}
 
-			return $http(requestConfig);
+			_this.requestUrl = drugApiUrl + '?' + paramSerializer(requestConfig.params);
+
+			searching = $http(requestConfig);
+			searching.success(function(data, status, config) {
+				var capitalized;
+
+				_this.data = data;
+				_this.status = status;
+
+				angular.forEach(data.results, function(result) {
+					capitalized = result.term.substring(0, 1).toUpperCase() + result.term.substring(1).toLowerCase();
+					_this.events.push({ term: capitalized, count: result.count });
+				});
+			})
+			searching.error(function(data, status) {
+				_this.data = data || "Request failed";
+				_this.status = status;
+			});
+
+			return searching;
 		};
 	}])
-	.controller('MedsearchController', ['$scope', '$filter', 'searchDrugEvents', 'EventService',
-		function($scope, $filter, searchDrugEvents, EventService) {
+	.controller('MedsearchController', ['$scope', '$filter', 'EventService',
+		function($scope, $filter, EventService) {
 			var search;
 			var medSearch = this;
 			var dateFilter = $filter('date');
@@ -87,54 +129,31 @@ angular.module('medInfoApp', [])
 			///////////////////////////////
 
 			medSearch.fetch = function() {
-				var doSearch;
+				var searching;
 				var searchResults;
 				var criteria = [];
 
-				EventService.events =  [];
+				EventService.clear();
 
 				if ($scope.filterMedicationName) {
-					criteria.push({ field: $scope.medicationField, value: '"' + $scope.medicationName + '"' });
+					EventService.addCriterion($scope.medicationField, $scope.medicationName, true);
 				}
 				if ($scope.filterAdministrationRoute) {
-					criteria.push({ field: 'patient.drug.drugadministrationroute', value: $scope.administrationRoute });
+					EventService.addCriterion('patient.drug.drugadministrationroute', $scope.administrationRoute);
 				}
 				if ($scope.filterDosage) {
-					criteria.push({ field: 'patient.drug.drugcumulativedosageunit', value: $scope.dosageUnit });
-					criteria.push({ field: 'patient.drug.drugcumulativedosagenumb'
-						, value: createNumberRange($scope.dosageFrom, $scope.dosageTo) });
+					EventService.addCriterion('patient.drug.drugcumulativedosageunit', $scope.dosageUnit);
+					EventService.addCriterion('patient.drug.drugcumulativedosagenumb', createNumberRange($scope.dosageFrom, $scope.dosageTo));
 				}
 				if ($scope.filterSince) {
-					criteria.push({ field: 'receivedate', value: createDateRange(dateFilter, new Date($scope.since), new Date()) });
+					EventService.addCriterion('receivedate', createDateRange(dateFilter, new Date($scope.since), new Date()));
 				}
 				if ($scope.filterSeverity) {
-					criteria.push({ field: 'serious', value: $scope.severity });
+					EventService.addCriterion('serious', $scope.severity);
 				}
 
-				$scope.code = null;
-				$scope.response = null;
-
 				// Perform the search
-				doSearch = searchDrugEvents(criteria, 'patient.reaction.reactionmeddrapt.exact', 100);
-
-				doSearch.success(function(data, status) {
-					var capitalized;
-
-					$scope.results = data.results.length;
-
-					$scope.status = status;
-					$scope.data = data;
-
-					angular.forEach(data.results, function(result) {
-						capitalized = result.term.substring(0, 1).toUpperCase() + result.term.substring(1).toLowerCase();
-						EventService.events.push({ term: capitalized, count: result.count });
-					});
-				});
-
-				doSearch.error(function(data, status) {
-					$scope.data = data || "Request failed";
-					$scope.status = status;
-				});
+				EventService.fetch('patient.reaction.reactionmeddrapt.exact', 100);
 			}
 		}
 	])
