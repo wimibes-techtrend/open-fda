@@ -41,6 +41,15 @@ angular.module('medInfoApp', [])
 	.factory('searchDrugEvents', ['$http', '$templateCache', 'API_KEY', function($http, $templateCache, apiKey) {
 		var method = 'GET';
 		var url = 'https://api.fda.gov/drug/event.json';
+
+		return function(criteria, countField, limit) {
+			var search;
+			var searchFields = [];
+
+			for (var criterion in criteria) {
+				if (criteria.hasOwnProperty(criterion)) {
+					criterion = criteria[criterion];
+					searchFields.push('(' + criterion.field + ':' + criterion.value + ')');
 				}
 			}
 			search = searchFields.join(' AND ');
@@ -58,50 +67,6 @@ angular.module('medInfoApp', [])
 			}
 
 			return $http(requestConfig);
-		};
-	}])
-	.controller('MedsearchController', ['$scope', '$filter', 'searchDrugEvents', 'EventService',
-		function($scope, $filter, searchDrugEvents, EventService) {
-			var search;
-			var medSearch = this;
-			var dateFilter = $filter('date');
-
-			$scope.EventService = EventService;
-
-			////// Some initialization /////
-			$scope.medicationName = 'Advil';
-			$scope.medicationField = 'patient.drug.medicinalproduct';
-			$scope.administrationRoute = '048'
-			$scope.since = '01/31/2014';
-			$scope.dosageUnit = '003';
-			$scope.severity = 1;
-			///////////////////////////////
-
-			medSearch.fetch = function() {
-				var doSearch;
-				var searchResults;
-				var criteria = [];
-
-				EventService.events =  [];
-
-				if ($scope.filterMedicationName) {
-					criteria.push({ field: $scope.medicationField, value: '"' + $scope.medicationName + '"' });
-				}
-				if ($scope.filterAdministrationRoute) {
-					criteria.push({ field: 'patient.drug.drugadministrationroute', value: $scope.administrationRoute });
-				}
-				if ($scope.filterDosage) {
-					criteria.push({ field: 'patient.drug.drugcumulativedosageunit', value: $scope.dosageUnit });
-					criteria.push({ field: 'patient.drug.drugcumulativedosagenumb'
-						, value: createNumberRange($scope.dosageFrom, $scope.dosageTo) });
-				}
-				if ($scope.filterSince) {
-					criteria.push({ field: 'receivedate', value: createDateRange(dateFilter, new Date($scope.since), new Date()) });
-				}
-				if ($scope.filterSeverity) {
-					criteria.push({ field: 'serious', value: $scope.severity });
-				}
-
 		};
 	}])
 	.controller('MedsearchController', ['$scope', '$filter', 'searchDrugEvents', 'EventService',
