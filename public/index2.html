@@ -6,7 +6,7 @@
 
 	<script type="text/javascript" src="https://www.google.com/jsapi"></script>
 	<script src="js/angular.js"></script>
-	<!-- <script src="js/filter.js"></script> -->
+	<script src="js/ng-google-chart.js"></script>
 	<script src="js/main.js"></script>
 	<style>
 		* {
@@ -79,11 +79,7 @@
 
 		<button id="search-submit-input" ng-click="medSearch.fetch()" name="submit" type="button">Search Incidents ...</button>
 
-		<div style="padding:2px;">
-			Showing top {{results}} events <!-- results that ended in a serious condition -->
-		</div>
-
-		<div style="display:block;">
+		<div style="display:none;">
 			Full URL: <input type="text" value="{{EventService.requestUrl}}" style="width:80%;"/>
 			<pre>HTTP status code: {{EventService.status}}</pre>
 			<pre>HTTP response data: {{EventService.data}}</pre>
@@ -94,10 +90,20 @@
 		Event types: displays a semi-interactive chart about the event types that exist for the selected medications
 	-->
 	<div ng-controller="EventListController">
-		<div ng-model="results" style="width:30em;height:20ex;overflow:auto;border:1px inset #eee;">
-			<div style="padding:2px;" ng-repeat="event in EventService.events">
-				<span style="float:right;">events: {{event.count}}</span>
-				<input name="term" value="{{event.term}}" type="checkbox"/>{{event.term}}
+		<div style="padding:2px;">
+			Showing top 10 events
+		</div>
+
+		<div style="display:{{displayMode}};">
+			<div ng-model="results" style="border:1px solid #red;overflow:auto;width:60%;height:20ex;">
+				<div style="margin:2px;" ng-repeat="event in EventService.events">
+					<span style="float:right;">events: {{event.count}}</span>
+					<input name="term" value="{{event.term}}" type="checkbox"/>{{event.term}}
+				</div>
+			</div>
+			<hr/>
+			<div style="border:1px solid #red;padding:2px;width:60%;">
+				<div google-chart chart="chart" style="{{chart.cssStyle}}"></div>
 			</div>
 		</div>
 	</div>

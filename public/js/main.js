@@ -28,13 +28,14 @@ function createNumberRange(num1, num2) {
 		&search=patient.drug.medicinalproduct:cetirizine
 		&count=patient.drug.medicinalproduct.exact
 */
-angular.module('medInfoApp', [])
+angular.module('medInfoApp', ['googlechart'])
 	.value('DRUG_API_URL', 'https://api.fda.gov/drug/event.json')
 	.value('API_KEY', 'LZgWcrkV7bemrG9i8sKDE8GbWWAUbbOzIRTIOuxU')
 	.service('EventService', ['$http', '$templateCache', 'DRUG_API_URL', 'API_KEY', function($http, $templateCache, drugApiUrl, apiKey) {
 		var _this = this;
 		var events = [ { term: 'Wim Ibes', count: 2034 } ];
-		var criteria = [];
+		var _criteria = [];
+		var _watchers = [];
 
 		// Impl
 		this.data = '<n/a>';
@@ -43,19 +44,22 @@ angular.module('medInfoApp', [])
 		this.events = events;
 		this.clear = function() {
 			_this.events = [];
-			_this.criteria = [];
+			_criteria = [];
 		};
 		this.addCriterion = function(field, value, quoted) {
 			var values;
 			var criterion;
 
-			if (criteria.hasOwnProperty(field)) {
-				criterion = criteria[field];
+			if (_criteria.hasOwnProperty(field)) {
+				criterion = _criteria[field];
 				criterion.values.push(value);
 			} else {
 				criterion = { values: [ value ], quoted: ((quoted) ? true : false) };
-				criteria[field] = criterion;
+				_criteria[field] = criterion;
 			}
+		};
+		this.onChange = function(fn) {
+			_watchers.push(fn);
 		};
 		this.fetch = function(groupField, limit) {
 			var searching;
@@ -65,9 +69,9 @@ angular.module('medInfoApp', [])
 			var searchFields = [];
 			var countBy = (groupField) ? groupField : 'patient.reaction.reactionmeddrapt.exact';
 
-			for (var field in criteria) {
-				if (criteria.hasOwnProperty(field)) {
-					criterion = criteria[field];
+			for (var field in _criteria) {
+				if (_criteria.hasOwnProperty(field)) {
+					criterion = _criteria[field];
 					values = criterion.values.join(' ');
 					if (criterion.quoted) {
 						values = '"' + values + '"';
@@ -102,6 +106,14 @@ angular.module('medInfoApp', [])
 					capitalized = result.term.substring(0, 1).toUpperCase() + result.term.substring(1).toLowerCase();
 					_this.events.push({ term: capitalized, count: result.count });
 				});
+
+				for (var i = 0; i < _watchers.length; i++) {
+					try {
+						_watchers[i](_this);
+					} catch (e) {
+						// log(e)
+					}
+				}
 			})
 			searching.error(function(data, status) {
 				_this.data = data || "Request failed";
@@ -153,13 +165,81 @@ angular.module('medInfoApp', [])
 				}
 
 				// Perform the search
-				EventService.fetch('patient.reaction.reactionmeddrapt.exact', 100);
+				EventService.fetch('patient.reaction.reactionmeddrapt.exact', 10);
 			}
 		}
 	])
 	.controller('EventListController', ['$scope', '$filter', 'EventService',
 		function($scope, $filter, EventService) {
+			var chartRows;
+
+			$scope.displayMode = 'none';
+
+			EventService.onChange(function() {
+				var events = EventService.events;
+				var rows = [];
+
+				$scope.displayMode = 'block';
+
+				for (var i = 0; i < events.length; i++) {
+					var event = events[i];
+					rows.push({ c: [
+						{ v: event.term },
+						{ v: event.count },
+					]});
+				}
+
+				$scope.chart = {
+					type: "ColumnChart",
+					cssStyle: "height:60ex",
+					data: {
+						cols: [
+							{ id: "reaction", label: "Reaction", type: "string", p: {} }
+							, { id: "laptop-id", label: "Incidents", type: "number", p: {} }
+						]
+						, rows: rows
+					},
+					options: {
+						title: "Top 10 Incidents by Reaction",
+						isStacked: false,
+						fill: 80,
+						displayExactValues: true,
+						vAxis: {
+							title: "Number of Incidents",
+							gridlines: {
+								count: 6
+							}
+						},
+						hAxis: {
+							title: "Reaction symptoms"
+						}
+					},
+					formatters: {},
+					displayed: true
+				}
+			});
+
 			$scope.EventService = EventService;
 		}
 	])
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
