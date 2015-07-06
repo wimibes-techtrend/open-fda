@@ -107,7 +107,7 @@ angular.module('medInfoApp', [])
 			var filters = [];
 
 				if ($scope.filterMedicationName) {
-					filters.push({ field: $scope.medicationField, value: '"' + $scope.medicationName + '"' });
+					filters.push({ field: $scope.medicationField, value: '"' + $scope.medicationField + '"' });
 				}
 				if ($scope.filterAdministrationRoute) {
 					filters.push({ field: 'patient.drug.drugadministrationroute', value: $scope.administrationRoute });
@@ -132,4 +132,3 @@ angular.module('medInfoApp', [])
 			
 		}
 	])
-;
