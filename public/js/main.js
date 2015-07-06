@@ -198,7 +198,7 @@ angular.module('medInfoApp', ['googlechart'])
 			    return '';
 			  };
 			  
-			  $scope.selected = undefined;
+			  $scope.administrationRoute = undefined;
 			  $scope.states = ['Oral','Auricular (otic)','Buccal','Cutaneous','Dental','Endocervical','Endosinusial',
 			                   'Endotracheal','Epidural','Extra-amniotic','Hemodialysis','Intra corpus cavernosum',
 			                   'Intra-amniotic','Intra-arterial','Intra-articular','Intra-uterine','Intracardiac',
@@ -212,14 +212,12 @@ angular.module('medInfoApp', ['googlechart'])
 			                   'Periarticular','Perineural','Rectal','Respiratory (inhalation)','Retrobulbar',
 			                   'Sunconjunctival','Subcutaneous','Subdermal','Sublingual','Topical','Transdermal',
 			                   'Transmammary','Transplacental','Unknown','Urethral','Vaginal'];
-			  
-			
 			///End UI///
 
 			////// Some initialization /////
 			$scope.medicationName = 'Advil';
 			$scope.medicationField = 'patient.drug.medicinalproduct';
-			$scope.administrationRoute = '048'
+			$scope.administrationRoute = 'Oral';
 			$scope.since = '01/31/2014';
 			$scope.dosageUnit = '003';
 			$scope.severity = 1;

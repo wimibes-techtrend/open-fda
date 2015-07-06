@@ -7,7 +7,7 @@
 		<script type="text/javascript" src="https://www.google.com/jsapi"></script>
 		<script src="js/angular.js"></script>
 		<script src="js/main.js"></script>
-		<script src="js/ui.js"></script>
+		<script src="js/ng-google-chart.js"></script>
 		<script src="js/ui-bootstrap-tpls-0.13.0.min.js"></script>
 		<link rel="stylesheet" href="bootstrap-3.3.5-dist/css/bootstrap.min.css">
 		
@@ -38,15 +38,15 @@
 						</div>
 						<form class="form-inline">
 							<div class="form-group">
-								<label class="sr-only" for="MedicationName">Medication Name</label>
+								<label class="sr-only" for="medicationName">Medication Name</label>
 								<div class="col-sm-10">
-									<input type="email" class="form-control" id="MedicationName" placeholder="Medication Name"/>
+									<input ng-model="medicationName" name="medication-name" type="text" class="form-control" id="medicationName" placeholder="Medication Name"/>
 								</div>
 							</div>
 							<div class="form-group">
-								<label class="col-sm-15" for="MedicationName">Medication Type:</label>
+								<label class="col-sm-15" for="medicationField">Medication Type:</label>
 								<select ng-model="medicationField" name="medication-field" class="form-control">
-									<option value="patient.drug.medicationname">Common name</option>
+									<option value="patient.drug.medicinalproduct">Common name</option>
 									<option value="patient.drug.openfda.brand_name">Brand name</option>
 									<option value="patient.drug.openfda.generic_name">Generic name</option>
 								</select>
@@ -67,7 +67,7 @@
 										<span bind-html-unsafe="match.label | typeaheadHighlight:query"></span>
 									</a>
 								</script>
-								<input type="text" ng-model="selected" typeahead="state for state in states | filter:$viewValue | limitTo:8" class="form-control"/>
+								<input type="text" ng-model="administrationRoute" name="administration-route" typeahead="state for state in states | filter:$viewValue | limitTo:8" class="form-control"/>
 							</div>
 						</div>
 						
@@ -78,7 +78,7 @@
 						</div>
 						<form class="form-inline">
 							<div class="form-group">
-								<label class="sr-only" for="MedicationName">Amount:</label>
+								<label class="sr-only" for="dosageunit">Amount:</label>
 							</div>
 							<div class="form-group">
 								<select ng-model="dosageunit" name="dosage-unit" class="form-control">
@@ -137,8 +137,26 @@
 								</p>
 							</div>
 						</div>
+						<div class="checkbox">
+							<label>
+								<input type="checkbox" value=""/>Severity
+							</label>
+						</div>
 						<div>
-							<button type="button" id="research" name="submit"  class="btn btn-primary" ng-click="research()">Show me more about my meds ...</button>
+							<form class="form-inline">
+								<div class="form-group">
+									<label class="sr-only" for="Severity">Amount:</label>
+								</div>
+								<div class="form-group">
+									<select ng-model="severities" name="severity-unit" class="form-control">
+										<option value="1">Severe</option>
+										<option value="2">Not Severe</option>
+									</select>
+								</div>
+							</form>
+						</div>
+						<div>
+							<button type="button" class="btn btn-primary" name="submit" id="search-submit-input" ng-click="medSearch.fetch()">Show Incidents</button>
 						</div>
 					</div>
 				</div>
@@ -146,6 +164,30 @@
 					
 				<div class="col-md-6">
 					<h4>Showing top {{results}} events:</h4> <!-- results that ended in a serious condition -->
+					<!--
+						Event types: displays a semi-interactive chart about the event types that exist for the selected medications
+					-->
+					<div ng-controller="EventListController">
+						<div style="padding:2px;">
+							Showing top 10 events
+						</div>
+				
+						<div style="display:{{displayMode}};">
+							<div ng-model="results" style="border:1px solid #red;overflow:auto;width:60%;height:20ex;">
+								<div style="margin:2px;" ng-repeat="event in EventService.events">
+									<span style="float:right;">events: {{event.count}}</span>
+									<input name="term" value="{{event.term}}" type="checkbox"/>{{event.term}}
+								</div>
+							</div>
+							<hr/>
+							<div style="border:1px solid #red;padding:2px;width:60%;">
+								<div google-chart chart="chart" style="{{chart.cssStyle}}"></div>
+							</div>
+						</div>
+					</div>
+					<!--
+						END Event types
+					-->
 					<textarea class="form-control" rows="3"></textarea>
 					<div class="input-group">
 						<div ng-model="results" style="width:30em;height:20ex;overflow:auto;border:1px inset #eee;">
