@@ -217,7 +217,7 @@ angular.module('medInfoApp', ['googlechart'])
 			////// Some initialization /////
 			$scope.medicationName = '';
 			$scope.medicationField = 'patient.drug.medicinalproduct';
-			$scope.administrationRoute = 'Oral';
+			$scope.administrationRoute = '048';
 			$scope.since = '01/31/2014';
 			$scope.dosageUnit = '003';
 			$scope.severity = 1;
