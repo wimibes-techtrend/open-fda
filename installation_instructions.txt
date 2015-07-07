@@ -1,0 +1,28 @@
+install docker
+
+docker run --name mymongodb -d mongo
+
+docker run -i -t --name open_fda_ws --link mymongodb:db_1 -p 80:3000 maccam912/meanjs:latest bash
+
+cd Development
+git clone https://github.com/wimibes-techtrend/open-fda.git
+Enter username
+Enter password
+cd open-fda
+npm install
+node app.js
+Ctrl+p, Ctrl+q
+
+docker run -i -t --name open_fda_rest --link mymongodb:db_1 -p 81:3000 --volumes-from mount maccam912/meanjs:latest bash
+Enter username
+Enter password
+cd open-fda/web_service
+npm install
+node server/bin/automigrate.js
+node . 
+
+docker run -i -t --name jenkinsci -d -p 49001:8080 --link open_fda_ws:open_fda_ws  --link open_fda_rest:open_fda_rest jenkins bash 
+cd /usr/bin/local
+jenkins.sh
+Ctrl+p, Ctrl+q
+
