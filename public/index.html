@@ -26,6 +26,9 @@
 	</style>
 	<body>
 		<!-- Search page -->
+		<div class="text-center">
+			<h1>Med Effects</h1>
+		</div>
 		<div ng-controller="MedsearchController as medList">
 			<div class="row">
 				<div class="col-md-6">
@@ -196,9 +199,6 @@
 								<input name="medication" value="{{med.term}}" type="checkbox"/>{{med.term}}
 							</div>
 						</div>
-					</div>
-					<div>
-						<button type="button" id="research" name="submit"  class="btn btn-primary" ng-click="research()">Show me more about my meds ...</button>
 					</div>
 				</div>
 				<!-- end second column -->
