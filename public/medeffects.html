@@ -1,0 +1,209 @@
+<!doctype html>
+<html ng-app="medInfoApp">
+<head>
+	<meta charset="UTF-8"> 
+	<title>Med Effects :: search | openFDA</title>
+
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap-theme.min.css">
+	<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+	<link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
+	<link href="style.css" rel="stylesheet">
+	<!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
+	<!--[if lt IE 9]>
+	<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+	<script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+	<script src="js/angular.js"></script>
+	<script src="js/ng-google-chart.js"></script>
+	<script src="js/main.js"></script>
+
+	<style>
+		[ng-cloak] {
+				display: none;
+		}
+
+		body {
+				padding: 20px;
+				padding-top: 60px;
+				padding-bottom: 40px;
+		}
+	</style>
+
+</head>
+<body>
+	<!-- Top Nav -->
+	<div class="navbar navbar-default navbar-fixed-top" role="navigation">
+		<div class="container">
+			<div class="navbar-header">
+				<a href="#" class="navbar-brand">med-EFFECTS</a>
+			</div>
+			<div class="navbar-collapse collapse">
+				<ul class="nav navbar-nav">
+					<li>
+						<a href="https://github.com/wimibes-techtrend/open-fda"><i class="fa fa-github"></i>Github</a>
+					</li>
+					<li><a href="http://code.google.com/apis/chart/"><i class="fa fa-question-circle"></i>Chart reference at Google</a></li>
+				</ul>
+			</div>
+			<!--/.nav-collapse -->
+		</div>
+	</div>
+
+	<div class="container">
+		<div class="row">
+			<div class="col-xs-12" style="text-align: center;">
+				<h1>openFDA Med Effects Query Engine</h1>
+				<hr/>
+			</div>
+		</div>
+
+		<div class="row">
+			<!-- Search page: this should all be moved to a view (later) -->
+			<div ng-controller="MedsearchController as medSearch" class="col-xs-6">
+				<h3>Filter by:</h3>
+				<!-- Medication Name -->
+				<div class="input-group col-xs-12">
+					<div class="col-xs-12">
+						<h4>
+							<input ng-model="filterMedicationName" ng-change="" name="filter-medication-name" type="checkbox"/>
+							<span>Medication:</span>
+						</h4>
+					</div>
+					<div class="col-xs-6">
+						<select class="form-control" ng-model="medicationField" name="medication-field">
+							<option value="patient.drug.medicinalproduct">Common name</option>
+							<option value="patient.drug.openfda.brand_name">Brand name</option>
+							<option value="patient.drug.openfda.generic_name">Generic name</option>
+						</select>
+					</div>
+					<div class="col-xs-6">
+						<input class="form-control" ng-model="medicationName" name="medication-name" type="text" placeholder="Medication name"/>
+					</div>
+				</div>
+
+				<!-- Administration method -->
+				<div class="input-group">
+					<div class="col-xs-12">
+						<h4>
+							<input ng-model="filterAdministrationRoute" name="filter-administration-route" type="checkbox"/>
+							<span>Administered via:</span>
+						</h4>
+					</div>
+					<div class="col-xs-12">
+						<select class="form-control" ng-model="administrationRoute" name="administration-route">
+							<option value="001">Auricular (otic)</option><option value="002">Buccal</option><option value="003">Cutaneous</option><option value="004">Dental</option><option value="005">Endocervical</option><option value="006">Endosinusial</option><option value="007">Endotracheal</option><option value="008">Epidural</option><option value="009">Extra-amniotic</option><option value="010">Hemodialysis</option><option value="011">Intra corpus cavernosum</option><option value="012">Intra-amniotic</option><option value="013">Intra-arterial</option><option value="014">Intra-articular</option><option value="015">Intra-uterine</option><option value="016">Intracardiac</option><option value="017">Intracavernous</option><option value="018">Intracerebral</option><option value="019">Intracervical</option><option value="020">Intracisternal</option><option value="021">Intracorneal</option><option value="022">Intracoronary</option><option value="023">Intradermal</option><option value="024">Intradiscal (intraspinal)</option><option value="025">Intrahepatic</option><option value="026">Intralesional</option><option value="027">Intralymphatic</option><option value="028">Intramedullar (bone marrow)</option><option value="029">Intrameningeal</option><option value="030">Intramuscular</option><option value="031">Intraocular</option><option value="032">Intrapericardial</option><option value="033">Intraperitoneal</option><option value="034">Intrapleural</option><option value="035">Intrasynovial</option><option value="036">Intratumor</option><option value="037">Intrathecal</option><option value="038">Intrathoracic</option><option value="039">Intratracheal</option><option value="040">Intravenous bolus</option><option value="041">Intravenous drip</option><option value="042">Intravenous (not otherwise specified)</option><option value="043">Intravesical</option><option value="044">Iontophoresis</option><option value="045">Nasal</option><option value="046">Occlusive dressing technique</option><option value="047">Ophthalmic</option><option value="049">Oropharingeal</option><option value="050">Other</option><option value="048">Oral</option><option value="051">Parenteral</option><option value="052">Periarticular</option><option value="053">Perineural</option><option value="054">Rectal</option><option value="055">Respiratory (inhalation)</option><option value="056">Retrobulbar</option><option value="057">Sunconjunctival</option><option value="058">Subcutaneous</option><option value="059">Subdermal</option><option value="060">Sublingual</option><option value="061">Topical</option><option value="062">Transdermal</option><option value="063">Transmammary</option><option value="064">Transplacental</option><option value="065">Unknown</option><option value="066">Urethral</option><option value="067">Vaginal</option>
+						</select>
+					</div>
+				</div>
+
+				<!-- Cumulative dosage -->
+				<div class="input-group">
+					<div class="col-xs-12">
+						<h4>
+							<input ng-model="filterDosage" name="filter-dosage" value="1" type="checkbox"/>
+							<span>Dosage:</span>
+						</h4>
+					</div>
+					<div class="col-xs-4">
+						<select class="form-control" ng-model="dosageUnit" name="dosage-unit">
+							<option value="004">microgram(s)</option>
+							<option value="003">milligram(s)</option>
+							<option value="002">gram(s)</option>
+							<option value="001">kilogram(s)</option>
+						</select>
+					</div>
+					<div class="col-xs-1" style="text-align:right;padding-top:1ex;">
+						<span>From:</span>
+					</div>
+					<div class="col-xs-3">
+						<input class="form-control" ng-model="dosageFrom" name="dosage-from" type="text" placeholder="Min" value="0" size="4"/>
+					</div>
+					<div class="col-xs-1" style="text-align:right;padding-top:1ex;">
+						<span>To:</span>
+					</div>
+					<div class="col-xs-3">
+						<input class="form-control" ng-model="dosageTo" name="dosage-to" type="text" placeholder="Max" size="4"/>
+					</div>
+				</div>
+				
+				<!-- Since -->
+				<div class="input-group">
+					<div class="col-xs-12">
+						<h4>
+							<input ng-model="filterSince" name="filter-since" value="1" type="checkbox"/>
+							<span>Since:</span>
+						</h4>
+					</div>
+					<div class="col-xs-12">
+						<input class="form-control" ng-model="since" name="since" type="text" placeholder="Date (mm/yy/dddd)" value="0"/>
+					</div>
+				</div>
+
+				<!-- Severity -->
+				<div class="input-group">
+					<div class="col-xs-12">
+						<h4>
+							<input ng-model="filterSeverity" name="filter-severity" value="1" type="checkbox"/>
+							<span>Severity:</span>
+						</h4>
+					</div>
+					<div class="col-xs-12">
+						<select class="form-control" ng-model="severity" name="severity">
+							<option value="1">Severe</option>
+							<option value="2">Not Severe</option>
+						</select>
+					</div>
+				</div>
+
+				<hr/>
+				<button class="form-control" id="search-submit-input" ng-click="medSearch.fetch()" name="submit" type="button">Search Incidents ...</button>
+
+				<div style="display:none;">
+					Full URL: <input type="text" value="{{EventService.requestUrl}}" style="width:80%;"/>
+					<pre>HTTP status code: {{EventService.status}}</pre>
+					<pre>HTTP response data: {{EventService.data}}</pre>
+				</div>
+			</div>
+
+			<!--
+				Event types: displays a semi-interactive chart about the event types that exist for the selected medications
+			-->
+			<div ng-controller="EventListController" class="col-xs-6">
+				<div style="padding:2px;">
+					<h3>Showing top 10 Reactions</h3>
+				</div>
+				<div style="display:{{displayMode}};">
+					<div>
+						<div google-chart chart="chart" style="{{chart.cssStyle}}"></div>
+					</div>
+					<hr/>
+					<div ng-model="results" style="border:1px solid #eee;overflow:auto;height:20ex;">
+						<div style="margin:2px;" ng-repeat="event in EventService.events">
+							<span style="float:right;"><i># of incidents: {{event.count}}</i></span>
+							<span>{{event.term}}</span>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+

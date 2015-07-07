@@ -132,7 +132,7 @@ angular.module('medInfoApp', ['googlechart'])
 			$scope.EventService = EventService;
 
 			////// Some initialization /////
-			$scope.medicationName = 'Advil';
+			$scope.medicationName = '';
 			$scope.medicationField = 'patient.drug.medicinalproduct';
 			$scope.administrationRoute = '048'
 			$scope.since = '01/31/2014';
@@ -191,7 +191,7 @@ angular.module('medInfoApp', ['googlechart'])
 
 				$scope.chart = {
 					type: "ColumnChart",
-					cssStyle: "height:60ex",
+					cssStyle: "height:50ex",
 					data: {
 						cols: [
 							{ id: "reaction", label: "Reaction", type: "string", p: {} }
