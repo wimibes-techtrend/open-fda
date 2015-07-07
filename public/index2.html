@@ -8,6 +8,8 @@
 	<script src="js/angular.js"></script>
 	<script src="js/ng-google-chart.js"></script>
 	<script src="js/main.js"></script>
+	<script src="js/ui-bootstrap-tpls-0.13.0.min.js"></script>
+	<link rel="stylesheet" href="bootstrap-3.3.5-dist/css/bootstrap.min.css">
 	<style>
 		* {
 			font-family: arial, verdana, helvetica, sans serif;
@@ -21,6 +23,12 @@
 	<!--
 		Search page
 	-->
+	<div class="text-center">
+			<h1>Med Effects</h1>
+	</div>
+	<div ng-controller="MedsearchController as medList">
+		<div class="row">
+			<div class="col-md-6">
 	<div ng-controller="MedsearchController as medSearch">
 		<span>Filter by:</span>
 		<!-- Medication Name -->
@@ -85,10 +93,12 @@
 			<pre>HTTP response data: {{EventService.data}}</pre>
 		</div>
 	</div>
-
+		</div>
+			
 	<!--
 		Event types: displays a semi-interactive chart about the event types that exist for the selected medications
 	-->
+	<div class="col-md-6">
 	<div ng-controller="EventListController">
 		<div style="padding:2px;">
 			Showing top 10 events
@@ -106,6 +116,9 @@
 				<div google-chart chart="chart" style="{{chart.cssStyle}}"></div>
 			</div>
 		</div>
+	</div>
+	</div>
+	</div>
 	</div>
 
 </body>
